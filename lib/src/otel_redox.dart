@@ -1,15 +1,16 @@
-// Licensed under the Dartastic Pro Software License Agreement.
+// Licensed under the Apache License, Version 2.0
 // Copyright 2025-2026 Mindful Software LLC d/b/a Dartastic.io, All rights reserved.
 
-import 'package:dartastic_opentelemetry/dartastic_opentelemetry.dart';
+import 'package:dartastic_opentelemetry_api/dartastic_opentelemetry_api.dart';
 
 import 'otel_redox_suppression.dart';
 
 const _tracerName = 'dartastic_otel_libs_redox';
 
-Tracer _tracer() => OTel.tracerProvider().getTracer(_tracerName);
+APITracer _tracer() => OTelAPI.tracerProvider().getTracer(_tracerName);
 
 class RedoxResult {
+  /// Creates a result.
   const RedoxResult({
     this.destinationName,
     this.destinationId,
@@ -81,8 +82,13 @@ class RedoxResult {
   final int? statusCode;
 }
 
+/// What a traced call returned: the value for the caller plus fields
+/// recorded on the span.
 class RedoxCallResult<T> {
+  /// Creates a call result.
   const RedoxCallResult({required this.value, this.result});
+
+  /// The value returned to the caller.
   final T value;
   final RedoxResult? result;
 }
@@ -114,7 +120,7 @@ Future<T> tracedRedox<T>({
   final span = _tracer().startSpan(
     'redox $operation',
     kind: SpanKind.client,
-    attributes: OTel.attributesFromMap(m),
+    attributes: OTelAPI.attributesFromMap(m),
   );
   try {
     final r = await invoke();
@@ -122,104 +128,104 @@ Future<T> tracedRedox<T>({
       final res = r.result!;
       final extras = <Attribute<Object>>[];
       if (res.destinationName != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'redox.destination.name',
           res.destinationName!,
         ));
       }
       if (res.destinationId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'redox.destination.id',
           res.destinationId!,
         ));
       }
       if (res.dataModel != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'redox.data_model',
           res.dataModel!,
         ));
       }
       if (res.eventType != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'redox.event_type',
           res.eventType!,
         ));
       }
       if (res.fhirResourceType != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'redox.fhir.resource_type',
           res.fhirResourceType!,
         ));
       }
       if (res.fhirId != null) {
-        extras.add(OTel.attributeString('redox.fhir.id', res.fhirId!));
+        extras.add(OTelAPI.attributeString('redox.fhir.id', res.fhirId!));
       }
       if (res.fhirVersion != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'redox.fhir.version',
           res.fhirVersion!,
         ));
       }
       if (res.patientId != null) {
-        extras.add(OTel.attributeString('redox.patient.id', res.patientId!));
+        extras.add(OTelAPI.attributeString('redox.patient.id', res.patientId!));
       }
       if (res.encounterId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'redox.encounter.id',
           res.encounterId!,
         ));
       }
       if (res.orderId != null) {
-        extras.add(OTel.attributeString('redox.order.id', res.orderId!));
+        extras.add(OTelAPI.attributeString('redox.order.id', res.orderId!));
       }
       if (res.documentId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'redox.document.id',
           res.documentId!,
         ));
       }
       if (res.fhirBundleEntryCount != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'redox.fhir.bundle.entry_count',
           res.fhirBundleEntryCount!,
         ));
       }
       if (res.organizationId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'redox.organization.id',
           res.organizationId!,
         ));
       }
       if (res.endpointType != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'redox.endpoint.type',
           res.endpointType!,
         ));
       }
       if (res.subscriptionId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'redox.subscription.id',
           res.subscriptionId!,
         ));
       }
       if (res.responseTimeMs != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'redox.response_time_ms',
           res.responseTimeMs!,
         ));
       }
       if (res.errorCode != null) {
-        extras.add(OTel.attributeString('redox.error.code', res.errorCode!));
+        extras.add(OTelAPI.attributeString('redox.error.code', res.errorCode!));
         span.setStatus(SpanStatusCode.Error, 'Redox ${res.errorCode}');
       }
       if (res.errorMessage != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'redox.error.message',
           res.errorMessage!,
         ));
       }
       if (res.statusCode != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'http.response.status_code',
           res.statusCode!,
         ));
@@ -227,13 +233,13 @@ Future<T> tracedRedox<T>({
           span.setStatus(SpanStatusCode.Error, 'Redox HTTP ${res.statusCode}');
         }
       }
-      if (extras.isNotEmpty) span.addAttributes(OTel.attributes(extras));
+      if (extras.isNotEmpty) span.addAttributes(OTelAPI.attributes(extras));
     }
     return r.value;
   } catch (e, st) {
-    span.addAttributes(OTel.attributes([
-      OTel.attributeString(
-        ErrorResource.errorType.key,
+    span.addAttributes(OTelAPI.attributes([
+      OTelAPI.attributeString(
+        ErrorAttributes.errorType.key,
         e.runtimeType.toString(),
       ),
     ]));
